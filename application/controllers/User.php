@@ -4,6 +4,9 @@ class User extends CI_Controller{
     {
         parent::__construct();
 
+/*
+ * SESSION KONTROLÜ. Açılmış bir oturum yok ise login sayfasına yönlendirir
+ */
         if ($this->session->userdata('USER') == null){
             redirect(base_url('Login'));
         }

@@ -5,11 +5,17 @@ class Lessons extends CI_Controller
     public function __construct()
     {
         parent::__construct();
+
+/*
+ * SESSION KONTROLÜ. Açılmış bir oturum yok ise login sayfasına yönlendirir
+ */
         if ($this->session->userdata('USER') == null) {
             redirect(base_url('Login'));
         }
         $this->USER = (object)$this->session->userdata('USER');
 
+
+//        Bu sayfaya yönetici hesabının girişi engellenir. Yönetici yalnızca kullanıcı yönetimini üstlenir.
         if ($this->USER->type == "0") {
             redirect(base_url('User'));
         }
@@ -20,9 +26,16 @@ class Lessons extends CI_Controller
 
     public function index()
     {
+
+
         $data = array(
             'USER' => $this->USER,
             'LESSONS' => match ($this->USER->type) {
+                /*
+                 * Giriş yapan hesap ;
+                 * -> (1) Akademisyen ise kendi açmış olduğu dersler çağırılır
+                 * -> (2) Öğrenci ise aldığı dersler çağırılır
+                 */
                 '1' => $this->lessons_model->getLessons($this->USER->id),
                 '2' => $this->lessons_model->getLessonsAll($this->USER->id)
             },
@@ -32,6 +45,8 @@ class Lessons extends CI_Controller
         $this->load->view('lessons', $data);
     }
 
+
+//    Homework sayfası açılır, derse ait ödevler listelenir
     public function homework($id = 0)
     {
         if ($id == 0) {
@@ -50,6 +65,7 @@ class Lessons extends CI_Controller
         $this->load->view('homeworks', $data);
     }
 
+//    Bir ödeve ait notlandırma işlemi yapılır
     public function gradeHw()
     {
         $this->checkAccess();
@@ -64,6 +80,8 @@ class Lessons extends CI_Controller
         redirect(base_url('Lessons/homework/') . $hwid);
     }
 
+
+//    Yetki kontrolü. Hesap tipi akademisyen değilse notlandırma, ders ekleme gibi işlemler engellenir.
     private function checkAccess()
     {
         if ($this->USER->type !== "1") {
@@ -72,10 +90,11 @@ class Lessons extends CI_Controller
         }
     }
 
+//    Ders ekleme işlemi
     public function addLesson()
     {
-        $name = $this->input->post('name');
         $this->checkAccess();
+        $name = $this->input->post('name');
         if ($name == "") {
             $this->notify->setNotify('Ders adı boş bırakılamaz', 'danger');
             redirect(base_url('Lessons'));
@@ -89,6 +108,7 @@ class Lessons extends CI_Controller
         }
     }
 
+//    Var olan dersi silme işlemi
     public function DeleteLesson($lessonID)
     {
         $this->checkAccess();
@@ -100,6 +120,7 @@ class Lessons extends CI_Controller
         redirect(base_url('Lessons'));
     }
 
+//    Varolan derse ödev ekleme işlemi
     public function addHomework()
     {
         $caption = $this->input->post('hwCaption');
@@ -126,6 +147,8 @@ class Lessons extends CI_Controller
         print_r($data);
     }
 
+
+//    ders idsine göre içerdiği ödev listesi çekilir
     public function getHomeworks()
     {
         $hws = $this->lessons_model->getHomeworks($this->input->post('lessonid'));
@@ -138,20 +161,22 @@ class Lessons extends CI_Controller
     }
 
 
-    public function addStudentToLesson()
-    {
-        $lessonid = $this->input->post('lessonid');
-        $students = $this->input->post('stuID');
+//    Öğrencileri derse ekler veya çıkarır
+//    public function addStudentToLesson()
+//    {
+//        $lessonid = $this->input->post('lessonid');
+//        $students = $this->input->post('stuID');
+//
+//        $data = array();
+//        foreach ($students as $student) {
+//            $data[] = array('studentid' => $student, 'lessonid' => $lessonid);
+//        }
+//
+//        print_r($data);
+//
+//    }
 
-        $data = array();
-        foreach ($students as $student) {
-            $data[] = array('studentid' => $student, 'lessonid' => $lessonid);
-        }
-
-        print_r($data);
-
-    }
-
+    //    Öğrencileri derse ekler veya çıkarır
     public function editStudentsOnLesson()
     {
         $data = array();

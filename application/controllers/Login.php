@@ -12,11 +12,14 @@ class Login extends CI_Controller {
         }
     }
 
+
+
     public function index($error = 0)
 	{
 		$this->load->view('login', array('error' => $error));
 	}
 
+//    GİRİŞ İŞLEMİ
     public function Signin(){
         $user = $this->input->post('email');
         $pass = $this->input->post('pass');
@@ -36,6 +39,8 @@ class Login extends CI_Controller {
         }
     }
 
+
+//    ÇIKIŞ İŞLEMİ
     public function logout(){
         $this->session->sess_destroy();
         redirect(base_url('Login'));

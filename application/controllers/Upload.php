@@ -1,8 +1,17 @@
 <?php
-class Upload extends CI_Controller{
+
+
+/*
+ * Bu controller yalnızca dosya yükleme işlemi esnasında ajax tarafından istek alır.
+ */
+class Upload extends CI_Controller
+{
     public function __construct()
     {
         parent::__construct();
+/*
+ * SESSION KONTROLÜ. Açılmış bir oturum yok ise login sayfasına yönlendirir
+ */
         if ($this->session->userdata('USER') == null) {
             redirect(base_url('Login'));
         }
@@ -11,7 +20,8 @@ class Upload extends CI_Controller{
 
     private object $USER;
 
-    public function index(){
+    public function index()
+    {
         $config = array(
             'upload_path' => 'uploaded/',
             'allowed_types' => 'pdf|doc|docx|ppt|pptx|xls|xlsx|txt',
@@ -19,7 +29,7 @@ class Upload extends CI_Controller{
         );
         $this->load->library('upload', $config);
         $this->upload->initialize($config);
-        if ($this->upload->do_upload('file')){
+        if ($this->upload->do_upload('file')) {
             $data = array(
                 'docname' => $this->upload->data('orig_name'),
                 'path' => $this->upload->data('file_name'),
@@ -29,16 +39,16 @@ class Upload extends CI_Controller{
             );
 
             $this->load->model('upload_model');
-            if ($this->upload_model->sendDb($data)){
+            if ($this->upload_model->sendDb($data)) {
                 echo json_encode(array('error' => false, 'msg' => 'Başarılı'), JSON_UNESCAPED_UNICODE);
-                $this->notify->setNotify('Dosyanız başarıyla gönderildi','success');
-            }else{
+                $this->notify->setNotify('Dosyanız başarıyla gönderildi', 'success');
+            } else {
                 echo json_encode(array('error' => true, 'msg' => 'Veritabanına kaydedilemedi'), JSON_UNESCAPED_UNICODE);
-                $this->notify->setNotify('Veritabanına kaydedilemedi','danger');
+                $this->notify->setNotify('Veritabanına kaydedilemedi', 'danger');
             }
-        }else{
+        } else {
             echo json_encode(array('error' => true, 'msg' => $this->upload->display_errors()), JSON_UNESCAPED_UNICODE);
-            $this->notify->setNotify('Dosya yüklenemedi : ' . $this->upload->display_errors(),'danger');
+            $this->notify->setNotify('Dosya yüklenemedi : ' . $this->upload->display_errors(), 'danger');
         }
     }
 }
